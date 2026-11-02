@@ -1,0 +1,46 @@
+name: Build and Deploy 
+ 
+on: 
+  push: 
+    branches: [ main ] 
+ 
+jobs: 
+  build-backend: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - uses: actions/checkout@v4 
+       
+      - name: Setup .NET 
+        uses: actions/setup-dotnet@v4 
+        with: 
+          dotnet-version: '10.0.x' 
+ 
+      - name: Build Backend 
+        run: dotnet build TodoApi/TodoApi.csproj --configuration Release 
+ 
+  build-frontend: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - uses: actions/checkout@v4 
+ 
+      - name: Setup Node.js 
+        uses: actions/setup-node@v4 
+        with: 
+          node-version: 20 
+ 
+      - name: Install & Build Frontend 
+        run: | 
+          cd todo-frontend 
+          npm install 
+          npm run build 
+ 
+  trigger-deploy: 
+    needs: [build-backend, build-frontend] 
+    runs-on: ubuntu-latest 
+    steps: 
+      - name: Trigger Render Deploy Hook (Backend) 
+        run: curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}" 
+         
+      - name: Trigger Render Deploy Hook (Frontend) 
+        run: curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}" 
+ 
