@@ -1,10 +1,9 @@
-ARG MY_URL="https://microsoft.com"
-FROM $MY_URL AS build
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet publish "TodoApi.csproj" -c Release -o /app/publish
 
-FROM $MY_URL
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "TodoApi.dll"]
