@@ -3,10 +3,10 @@ using TodoApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add PostgreSQL Database Context
+// 1. Get the connection string first
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Check if the connection string is using Render's postgres:// URI format
+// 2. Parse and fix the string immediately
 if (connectionString != null && connectionString.StartsWith("postgres://"))
 {
     var databaseUri = new Uri(connectionString);
@@ -14,7 +14,6 @@ if (connectionString != null && connectionString.StartsWith("postgres://"))
     var username = userInfo[0];
     var password = userInfo.Length > 1 ? userInfo[1] : "";
 
-    // Convert to standard .NET key-value pair format with correct index slicing
     connectionString = $"Host={databaseUri.Host};" +
                        $"Port={databaseUri.Port};" +
                        $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
@@ -24,6 +23,7 @@ if (connectionString != null && connectionString.StartsWith("postgres://"))
                        $"Trust Server Certificate=true;";
 }
 
+// 3. NOW pass the correctly formatted string to the DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -56,7 +56,7 @@ app.MapPost("/api/todos", async (Todo todo, AppDbContext db) =>
     return Results.Created($"/api/todos/{todo.Id}", todo);
 });
 
-// Run migrations on startup (Convenient for Render)
+// Run migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
