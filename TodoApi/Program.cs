@@ -5,6 +5,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add PostgreSQL Database Context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Check if the connection string is using Render's postgres:// URI format
+if (connectionString != null && connectionString.StartsWith("postgres://"))
+{
+    var databaseUri = new Uri(connectionString);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    // Convert to standard .NET key-value pair format
+    connectionString = $"Host={databaseUri.Host};" +
+                       $"Port={databaseUri.Port};" +
+                       $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
+                       $"Username={userInfo};" +
+                       $"Password={userInfo};" +
+                       $"SSL Mode=Require;" +
+                       $"Trust Server Certificate=true;";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
