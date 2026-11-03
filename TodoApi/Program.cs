@@ -3,7 +3,7 @@ using TodoApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Get the connection string first
+// 1. Get the raw connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // 2. Parse and fix the string immediately
@@ -21,11 +21,15 @@ if (connectionString != null && connectionString.StartsWith("postgres://"))
                        $"Password={password};" +
                        $"SSL Mode=Require;" +
                        $"Trust Server Certificate=true;";
+                       
+    // 3. OVERWRITE IT in the configuration provider so Npgsql cannot sneakily read the old one!
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 }
 
-// 3. NOW pass the correctly formatted string to the DbContext
+// 4. Pass the string to DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 
 // Add CORS Policy
 builder.Services.AddCors(options =>
