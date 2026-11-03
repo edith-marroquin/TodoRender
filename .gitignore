@@ -1,4 +1,3 @@
 todo-frontend/node_modules/
 TodoApi/bin/
 TodoApi/obj/
-TodoApi/appsettings.Development.json
