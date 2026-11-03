@@ -11,13 +11,15 @@ if (connectionString != null && connectionString.StartsWith("postgres://"))
 {
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
 
-    // Convert to standard .NET key-value pair format
+    // Convert to standard .NET key-value pair format with correct index slicing
     connectionString = $"Host={databaseUri.Host};" +
                        $"Port={databaseUri.Port};" +
                        $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
-                       $"Username={userInfo};" +
-                       $"Password={userInfo};" +
+                       $"Username={username};" +
+                       $"Password={password};" +
                        $"SSL Mode=Require;" +
                        $"Trust Server Certificate=true;";
 }
